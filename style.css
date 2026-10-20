@@ -1,0 +1,605 @@
+/* =========================================================
+   ANÁLISE DE PRODUTIVIDADE — style.css
+   Organização:
+   1. Variáveis (cores do tema claro e escuro)
+   2. Base (reset e tipografia)
+   3. Layout (container e grades)
+   4. Componentes (cabeçalho, cartões, KPIs, tabelas, filtros...)
+   5. Responsividade
+   ========================================================= */
+
+/* ---------- 1. VARIÁVEIS ----------
+   Todas as cores ficam aqui. O resto do CSS só usa var(--nome),
+   então para trocar o tema basta redefinir estas variáveis. */
+:root {
+  color-scheme: light;
+
+  /* Superfícies e textos */
+  --fundo: #f4f5f7;
+  --superficie: #fcfcfb;
+  --texto: #0b0b0b;
+  --texto-2: #52514e;
+  --texto-suave: #6f6d68;
+  --borda: rgba(11, 11, 11, 0.10);
+  --grade: #e1e0d9;
+
+  /* Marca CodeDog (azul e laranja) */
+  --marca: #2a78d6;
+  --marca-escura: #1c5cab;
+  --destaque: #eb6834;
+
+  /* Uma cor fixa para cada mês (a cor segue o mês em todo o painel) */
+  --cor-jul: #2a78d6;
+  --cor-ago: #eb6834;
+  --cor-set: #1baf7a;
+
+  /* Cores de status (só para sinalizar alta/queda e OK/revisar) */
+  --positivo: #006300;
+  --negativo: #d03b3b;
+
+  /* Espaçamentos e raios reaproveitados */
+  --espaco: 1rem;
+  --raio: 12px;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Tema escuro seguindo o sistema operacional (se o usuário não escolheu "claro") */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --fundo: #0d0d0d;
+    --superficie: #1a1a19;
+    --texto: #f0efec;
+    --texto-2: #c3c2b7;
+    --texto-suave: #9a988f;
+    --borda: rgba(255, 255, 255, 0.10);
+    --grade: #2c2c2a;
+    --marca: #3987e5;
+    --marca-escura: #86b6ef;
+    --destaque: #d95926;
+    --cor-jul: #3987e5;
+    --cor-ago: #d95926;
+    --cor-set: #199e70;
+    --positivo: #0ca30c;
+    --negativo: #e66767;
+    --sombra: none;
+  }
+}
+
+/* Tema escuro escolhido pelo botão (vale mesmo se o sistema estiver claro) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fundo: #0d0d0d;
+  --superficie: #1a1a19;
+  --texto: #f0efec;
+  --texto-2: #c3c2b7;
+  --texto-suave: #9a988f;
+  --borda: rgba(255, 255, 255, 0.10);
+  --grade: #2c2c2a;
+  --marca: #3987e5;
+  --marca-escura: #86b6ef;
+  --destaque: #d95926;
+  --cor-jul: #3987e5;
+  --cor-ago: #d95926;
+  --cor-set: #199e70;
+  --positivo: #0ca30c;
+  --negativo: #e66767;
+  --sombra: none;
+}
+
+/* ---------- 2. BASE ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* padding e borda entram na largura */
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+h1, h2, p, dl, dd, ol {
+  margin: 0;
+}
+
+/* Esconde da tela mas mantém para leitores de tela */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- 3. LAYOUT ---------- */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--espaco);
+}
+
+main.container {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espaco) * 1.25);
+  padding-bottom: calc(var(--espaco) * 3);
+}
+
+.grade {
+  display: grid;
+  gap: calc(var(--espaco) * 1.25);
+  grid-template-columns: 1fr; /* celular: uma coluna */
+}
+
+/* ---------- 4. COMPONENTES ---------- */
+
+/* Cabeçalho */
+.topo {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+  border-top: 4px solid var(--marca);
+}
+
+.topo__conteudo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco);
+  padding-top: calc(var(--espaco) * 1.5);
+  padding-bottom: calc(var(--espaco) * 1.5);
+}
+
+.topo__marca {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--destaque);
+}
+
+.topo__titulo {
+  font-size: clamp(1.6rem, 4vw, 2.2rem); /* cresce com a tela, com limite */
+  line-height: 1.15;
+}
+
+.topo__subtitulo {
+  color: var(--texto-2);
+}
+
+.topo__acoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Botões */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.botao--secundario {
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.botao--secundario:hover {
+  border-color: var(--marca);
+  color: var(--marca);
+}
+
+.botao--icone {
+  width: 40px;
+  padding: 0;
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 1.2rem;
+}
+
+.botao:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.tabela th button:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+}
+
+/* Linha que informa a origem dos dados */
+.fonte {
+  margin-top: calc(var(--espaco) * 1.25);
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--destaque);
+  border-radius: 6px;
+  background: var(--superficie);
+  color: var(--texto-2);
+  font-size: 0.9rem;
+}
+
+/* Cartões (caixas brancas que agrupam cada bloco) */
+.cartao {
+  min-width: 0; /* deixa o cartão encolher dentro da grade sem estourar */
+  padding: calc(var(--espaco) * 1.25);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.cartao__cabecalho {
+  margin-bottom: var(--espaco);
+}
+
+.cartao__cabecalho h2 {
+  font-size: 1.1rem;
+}
+
+.cartao__cabecalho p {
+  color: var(--texto-suave);
+  font-size: 0.875rem;
+}
+
+/* KPIs (indicadores no topo) */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--espaco);
+}
+
+.kpi {
+  min-width: 0;
+  padding: var(--espaco);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.kpi__rotulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.kpi__valor {
+  margin: 0.25rem 0;
+  font-size: clamp(1.15rem, 4.2vw, 1.6rem); /* diminui em telas pequenas para não cortar */
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.kpi__detalhe {
+  font-size: 0.85rem;
+  color: var(--texto-2);
+}
+
+.kpi--principal {
+  border-top: 3px solid var(--marca);
+}
+
+/* Bolinha colorida do mês (usada nos KPIs e na tabela) */
+.ponto {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: baseline;
+}
+
+.ponto--jul { background: var(--cor-jul); }
+.ponto--ago { background: var(--cor-ago); }
+.ponto--set { background: var(--cor-set); }
+
+/* Variação: cor + seta (nunca só a cor) */
+.variacao--alta { color: var(--positivo); font-weight: 600; }
+.variacao--queda { color: var(--negativo); font-weight: 600; }
+
+/* Gráficos: o canvas ocupa 100% da caixa; a caixa define a altura */
+.grafico {
+  position: relative;
+  width: 100%;
+}
+
+.grafico--mensal { height: 280px; }
+.grafico--distribuicao { height: 240px; }
+
+/* Tabelas */
+.tabela-rolagem {
+  overflow-x: auto; /* no celular a tabela rola de lado em vez de quebrar a página */
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums; /* números alinhados em coluna */
+}
+
+.tabela th,
+.tabela td {
+  padding: 0.55rem 0.45rem;
+  border-bottom: 1px solid var(--grade);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.tabela .num {
+  text-align: right;
+}
+
+.tabela tfoot td,
+.tabela .linha-total td {
+  font-weight: 700;
+  border-bottom: none;
+  border-top: 2px solid var(--grade);
+}
+
+.tabela tbody tr:hover {
+  background: color-mix(in srgb, var(--marca) 6%, transparent);
+}
+
+/* Cabeçalhos clicáveis do ranking */
+.tabela th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.tabela th button:hover {
+  color: var(--marca);
+}
+
+.tabela th[aria-sort="ascending"] button::after { content: " ▲"; }
+.tabela th[aria-sort="descending"] button::after { content: " ▼"; }
+
+/* Barrinha de participação dentro da célula */
+.barra-part {
+  display: inline-block;
+  width: 60px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 3px;
+  background: var(--grade);
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.barra-part span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--marca);
+}
+
+.ok { color: var(--positivo); font-weight: 600; }
+.revisar { color: var(--negativo); font-weight: 600; }
+
+.nota {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+/* Lista de destaques / estatísticas (rótulo à esquerda, valor à direita) */
+.lista-destaques div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--grade);
+}
+
+.lista-destaques div:last-child {
+  border-bottom: none;
+}
+
+.lista-destaques dt {
+  color: var(--texto-2);
+  font-size: 0.9rem;
+}
+
+.lista-destaques dt small {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.lista-destaques dd {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Etapas de qualidade dos dados */
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espaco);
+  padding: 0;
+  list-style: none;
+  counter-reset: etapa; /* contador CSS para numerar as etapas */
+}
+
+.etapas li {
+  position: relative;
+  padding: var(--espaco);
+  padding-top: 2.4rem;
+  border: 1px solid var(--grade);
+  border-radius: 10px;
+  counter-increment: etapa;
+}
+
+.etapas li::before {
+  content: counter(etapa);
+  position: absolute;
+  top: 0.75rem;
+  left: var(--espaco);
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--marca);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.etapas strong {
+  display: block;
+  font-size: 1.4rem;
+}
+
+.etapas span {
+  color: var(--texto-2);
+  font-size: 0.875rem;
+}
+
+/* Filtros */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: var(--espaco);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.campo label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.campo input,
+.campo select {
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+}
+
+.campo input {
+  width: 220px;
+}
+
+/* Legenda do gráfico empilhado */
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--texto-2);
+}
+
+.legenda__cor {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.legenda__cor--jul { background: var(--cor-jul); }
+.legenda__cor--ago { background: var(--cor-ago); }
+.legenda__cor--set { background: var(--cor-set); }
+
+#caixa-grafico-colaboradores {
+  margin-bottom: calc(var(--espaco) * 1.5);
+}
+
+/* Rodapé */
+.rodape {
+  padding: calc(var(--espaco) * 1.5) 0;
+  border-top: 1px solid var(--borda);
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ---------- 5. RESPONSIVIDADE ---------- */
+
+/* Tablet em diante: duas colunas */
+@media (min-width: 768px) {
+  .grade--2 {
+    grid-template-columns: 1fr 1.2fr; /* a tabela precisa de um pouco mais de espaço */
+  }
+
+  .grade--3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grade--3 > :last-child {
+    grid-column: 1 / -1; /* o histograma ocupa a linha inteira */
+  }
+}
+
+/* Desktop: três colunas no bloco de destaques */
+@media (min-width: 1100px) {
+  .grade--3 {
+    grid-template-columns: 1fr 1fr 1.2fr;
+  }
+
+  .grade--3 > :last-child {
+    grid-column: auto;
+  }
+}
+
+/* Celular: campos ocupam a largura toda */
+@media (max-width: 480px) {
+  .campo,
+  .campo input {
+    width: 100%;
+  }
+
+  .topo__acoes {
+    width: 100%;
+  }
+
+  .topo__acoes .botao--secundario {
+    flex: 1;
+  }
+}

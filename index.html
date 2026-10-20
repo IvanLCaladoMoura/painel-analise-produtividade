@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Painel de análise de produtividade por mês e por colaborador (Julho a Setembro), feito em HTML, CSS e JavaScript.">
+  <title>Análise de Produtividade</title>
+
+  <!-- Nosso CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js: biblioteca dos gráficos -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- SheetJS: lê arquivos .xlsx direto no navegador (usado no botão "Importar planilha") -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Nosso JS (defer = só roda depois que o HTML terminou de carregar) -->
+  <script defer src="script.js"></script>
+</head>
+<body>
+
+  <!-- ===================== CABEÇALHO ===================== -->
+  <header class="topo">
+    <div class="container topo__conteudo">
+      <div>
+        <p class="topo__marca">CodeDog · Análise de dados</p>
+        <h1 class="topo__titulo">Análise de Produtividade</h1>
+        <p class="topo__subtitulo">Valor total por mês e por colaborador · Julho, Agosto e Setembro</p>
+      </div>
+
+      <div class="topo__acoes">
+        <label class="botao botao--secundario" for="input-arquivo">
+          Importar planilha (.xlsx)
+        </label>
+        <input type="file" id="input-arquivo" accept=".xlsx" hidden>
+        <button type="button" class="botao botao--icone" id="botao-tema" aria-label="Alternar tema claro/escuro">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Aviso sobre a origem dos dados (o JS troca o texto quando uma planilha é importada) -->
+    <p class="fonte" id="fonte-dados" role="status"></p>
+
+    <!-- ===================== 1. INDICADORES (KPIs) ===================== -->
+    <section aria-labelledby="titulo-kpis">
+      <h2 class="visualmente-oculto" id="titulo-kpis">Indicadores principais</h2>
+      <div class="kpis" id="kpis">
+        <!-- Os cartões são criados pelo script.js -->
+      </div>
+    </section>
+
+    <!-- ===================== 2. VISÃO MENSAL ===================== -->
+    <section class="grade grade--2">
+      <article class="cartao">
+        <header class="cartao__cabecalho">
+          <h2>Valor total por mês</h2>
+          <p>Soma de todos os colaboradores em cada mês</p>
+        </header>
+        <div class="grafico grafico--mensal">
+          <canvas id="grafico-mensal" role="img" aria-label="Gráfico de barras com o valor total de cada mês"></canvas>
+        </div>
+      </article>
+
+      <article class="cartao">
+        <header class="cartao__cabecalho">
+          <h2>Resumo mensal</h2>
+          <p>Total, colaboradores com valor e média por colaborador</p>
+        </header>
+        <div class="tabela-rolagem">
+          <table class="tabela" id="tabela-resumo">
+            <thead>
+              <tr>
+                <th scope="col">Mês</th>
+                <th scope="col" class="num">Total</th>
+                <th scope="col" class="num">Colab.</th>
+                <th scope="col" class="num">Média / colab.</th>
+                <th scope="col" class="num">Var. %</th>
+                <th scope="col">Confere</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="nota">“Confere” compara a soma consolidada por colaborador com a soma bruta de cada mês.</p>
+      </article>
+    </section>
+
+    <!-- ===================== 3. DESTAQUES E ESTATÍSTICA ===================== -->
+    <section class="grade grade--3">
+      <article class="cartao">
+        <header class="cartao__cabecalho">
+          <h2>Destaques</h2>
+          <p>O que mais chama atenção no trimestre</p>
+        </header>
+        <dl class="lista-destaques" id="destaques"></dl>
+      </article>
+
+      <article class="cartao">
+        <header class="cartao__cabecalho">
+          <h2>Estatística descritiva</h2>
+          <p>Sobre o total do trimestre de cada colaborador</p>
+        </header>
+        <dl class="lista-destaques" id="estatisticas"></dl>
+      </article>
+
+      <article class="cartao">
+        <header class="cartao__cabecalho">
+          <h2>Distribuição</h2>
+          <p>Quantos colaboradores em cada faixa de total</p>
+        </header>
+        <div class="grafico grafico--distribuicao">
+          <canvas id="grafico-distribuicao" role="img" aria-label="Histograma com a quantidade de colaboradores por faixa de valor"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <!-- ===================== 4. QUALIDADE DOS DADOS ===================== -->
+    <section class="cartao">
+      <header class="cartao__cabecalho">
+        <h2>Qualidade dos dados</h2>
+        <p>Etapas de limpeza aplicadas antes da análise</p>
+      </header>
+      <ol class="etapas" id="qualidade"></ol>
+    </section>
+
+    <!-- ===================== 5. POR COLABORADOR ===================== -->
+    <section class="cartao" aria-labelledby="titulo-colaboradores">
+      <header class="cartao__cabecalho">
+        <h2 id="titulo-colaboradores">Por colaborador</h2>
+        <p>Composição mensal e ranking, ordenados pelo total do trimestre</p>
+      </header>
+
+      <!-- Filtros: valem para o gráfico E para a tabela abaixo -->
+      <div class="filtros">
+        <div class="campo">
+          <label for="filtro-busca">Buscar colaborador</label>
+          <input type="search" id="filtro-busca" placeholder="Ex.: 07">
+        </div>
+        <div class="campo">
+          <label for="filtro-limite">Exibir</label>
+          <select id="filtro-limite">
+            <option value="15">Top 15</option>
+            <option value="30">Top 30</option>
+            <option value="0">Todos</option>
+          </select>
+        </div>
+        <button type="button" class="botao botao--secundario" id="botao-csv">Exportar CSV</button>
+      </div>
+
+      <div class="legenda" aria-hidden="true">
+        <span><i class="legenda__cor legenda__cor--jul"></i>Julho</span>
+        <span><i class="legenda__cor legenda__cor--ago"></i>Agosto</span>
+        <span><i class="legenda__cor legenda__cor--set"></i>Setembro</span>
+      </div>
+
+      <div class="grafico" id="caixa-grafico-colaboradores">
+        <canvas id="grafico-colaboradores" role="img" aria-label="Barras empilhadas com o valor de cada colaborador em julho, agosto e setembro"></canvas>
+      </div>
+
+      <div class="tabela-rolagem">
+        <table class="tabela tabela--ranking" id="tabela-ranking">
+          <thead>
+            <tr>
+              <!-- data-coluna diz ao JS por qual campo ordenar -->
+              <th scope="col"><button type="button" data-coluna="posicao">#</button></th>
+              <th scope="col"><button type="button" data-coluna="nome">Colaborador</button></th>
+              <th scope="col" class="num"><button type="button" data-coluna="jul">Jul</button></th>
+              <th scope="col" class="num"><button type="button" data-coluna="ago">Ago</button></th>
+              <th scope="col" class="num"><button type="button" data-coluna="set">Set</button></th>
+              <th scope="col" class="num"><button type="button" data-coluna="total">Total</button></th>
+              <th scope="col" class="num"><button type="button" data-coluna="participacao">Part. %</button></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <p class="nota" id="contagem-ranking"></p>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>Desenvolvido por <strong>CodeDog</strong> · HTML, CSS e JavaScript puro + Chart.js</p>
+    </div>
+  </footer>
+
+</body>
+</html>
