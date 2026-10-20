@@ -1,5 +1,9 @@
 # 📊 Análise de Produtividade
 
+![Prévia do painel](preview.png)
+
+🔗 **[Ver o painel funcionando](https://ivanlcaladomoura.github.io/painel-analise-produtividade/)**
+
 Painel web de análise de dados que transforma uma planilha Excel de produtividade (Julho, Agosto e Setembro) em um dashboard interativo, feito com **HTML, CSS e JavaScript puro** + [Chart.js](https://www.chartjs.org/).
 
 > Os dados de exemplo são reais, mas **anonimizados**: os nomes dos colaboradores foram trocados por códigos.
